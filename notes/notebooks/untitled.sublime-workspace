@@ -1,0 +1,266 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"posi",
+				"position_matrix"
+			],
+			[
+				"h",
+				"head\tTag"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "import random\nimport pprint\nimport numpy as np\nimport math\nimport matplotlib.pyplot as plt\nfrom mpl_toolkits.mplot3d import Axes3D\nimport copy\n\nstress = 0\n\nclass Particle():\n# I added the tagged attribute for debugging purposes\n\tdef __init__(self, particletype, vy, vz, energy, x, y, z, tagged):\n\t\tself.particletype = particletype\n\t\tself.vy = vy\n\t\tself.vz = vz\n\t\tself.energy = energy\n\t\tself.x = x\n\t\tself.y = y\n\t\tself.z = z\n\t\tself.tagged = tagged\n# finds energy value for different particle types\ndef energyval(flag):\n\tif flag == \"w\":\n\t\treturn random.randint(1, 100)\n\telif flag == \"r\":\n\t\treturn -1\n\telse:\n\t\treturn 0\n\n# MATRIX CREATING FUNCTIONS\n\ndef find_wallmat(yval, xval, zval, val):\n\tif 0.75 * val < zval <= 0.95 * val and yval < 0.75 * val:\n\t\treturn 'r'\n\telif zval < 0.35 * val:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_wall_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_wallmat(x, z, y, dim), int(round(random.uniform(-100, -50))), int(round(random.uniform(350, 600)))\\\n\t\t, energyval(find_wallmat(x, z, y, dim)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_gridmat(yval, xval, zval, val):\n\tif val * 0.6 < zval <= val * 0.89 and yval <= val * 0.96:\n\t\tif val * 0.15 < yval <= val * 0.36:\n\t\t\tif val * 0.1 < xval <= val * 0.3:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.4 < xval <= val * 0.6:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.7 < xval <= val * 0.9:\n\t\t\t\treturn 'a'\n\t\tif val * 0.39 < yval <= val * 0.6:\n\t\t\tif val * 0.1 < xval <= val * 0.3:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.4 < xval <= val * 0.6:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.7 < xval <= val * 0.9:\n\t\t\t\treturn 'a'\n\t\tif val * 0.63 < yval <= val * 0.84:\n\t\t\tif val * 0.1 < xval <= val * 0.3:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.4 < xval <= val * 0.6:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.7 < xval <= val * 0.9:\n\t\t\t\treturn 'a'\n\t\treturn 'r'\n\telif zval < val * 0.35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_grid_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_gridmat(x, z, y, dim), int(round(random.uniform(-100, -50))), int(round(random.uniform(350, 600)))\\\n\t\t, energyval(find_gridmat(x, z, y, dim)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_xmat(xval, zval, yval):\n\tif 13 < xval <= 78:\n\t\tif 65 < zval <= 75 and yval <= 60:\n\t\t\treturn 'r'\n\t\telif 45 < zval <= 95 and 20 < yval <= 40:\n\t\t\treturn 'r'\n\tif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_x_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_xmat(z, y, x), int(round(random.uniform(-100, -50))), int(round(random.uniform(350, 600))), \\\n\t\tenergyval(find_xmat(z, y, x)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\n# JAX ONLY WORKS ON 1000 x 1000 x 1000 grid\n\ndef find_simplejaxmat(yval, xval, zval):\n\tif 40 < xval <= 60 and 75 < zval<= 95 and yval <= 5:\n\t\treturn 'r'\n\telif 25 < xval <= 75 and 80 < zval <= 90 and 32 < yval <= 42:\n\t\treturn 'r'\n\telif 45 < xval <= 55 and 50 < zval <= 100 and 32 < yval <= 42:\n\t\treturn 'r'\n\telif xval <= 25 and 66 < zval <= 100 and 22 < yval <= 52:\n\t\treturn 'r'\n\telif 75 < xval <= 100 and 66 < zval <= 100 and 22 < yval <= 52:\n\t\treturn 'r'\n\telif 31 < xval < 69 and 35 < zval <= 60 and 22 < yval <= 52:\n\t\treturn 'r'\n\t# elif 31 < xval < 69 and 100 < zval <= 125 and 22 < yval <= 52:\n\t# \treturn 'r'\n\tif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_jax_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_simplejaxmat(x, z, y), int(round(random.uniform(-100, -50))), int(round(random.uniform(350, 600)))\\\n\t\t, energyval(find_simplejaxmat(x, z, y)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\n# TETRAMAT HAS ONLY RIGHT ANGLES\n\ndef find_simpletetramat(yval, xval, zval):\n\tif 38 < xval <= 63 and 73 < zval <= 98 and yval <= 25:\n\t\treturn 'r'\n\telif 38 < xval <= 63 and 73 < zval <= 98 and yval <= 99:\n\t\treturn 'r'\n\telif 38 < xval <= 63 and 35 < zval <= 98 and yval <= 25:\n\t\treturn 'r'\n\telif 0 < xval <= 100 and 73 < zval <= 98 and yval <= 25:\n\t\treturn 'r'\n\telif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_tetra_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_simpletetramat(x, z, y), int(round(random.uniform(-100, -50))), int(round(random.uniform\\\n\t\t(350, 600))), energyval(find_simpletetramat(x, z, y)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_hmat(xval, zval, yval):\n\tif 65 < zval <= 85:\n\t\tif yval <= 95:\n\t\t\tif xval > 80 or xval <= 20:\n\t\t\t\treturn 'r'\n\t\t\telif 40 < yval <= 60:\n\t\t\t\treturn 'r'\n\telif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_h_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_hmat(z, y, x), int(round(random.uniform(-100, -50))), int(round(random.uniform\\\n\t\t(350, 600))), energyval(find_hmat(z, y, x)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_slitmat(xval, zval, yval):\n\tif 60 < zval <= 90:\n\t\tif 40 < xval < 60 and yval <= 10:\n\t\t\treturn 'a'\n\t\telif yval <= 52:\n\t\t\treturn 'r'\n\telif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_slit_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_slitmat(z, y, x), int(round(random.uniform(-100, -50))), int(round(random.uniform\\\n\t\t(350, 600))), energyval(find_slitmat(z, y, x)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_trapmat(xval, zval, yval):\n\tif 75 < zval <= 95:\n\t\tif yval <= 50:\n\t\t\treturn 'r'\n\tif 55 < zval <= 95:\n\t\tif zval >= yval:\n\t\t\treturn 'r'\n\telif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_trap_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_trapmat(z, y, x), int(round(random.uniform(-100, -50))), int(round(random.uniform\\\n\t\t(350, 600))), energyval(find_trapmat(z, y, x)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_pointmat(yval, xval, zval):\n\tif 55 < zval <= 75:\n\t\tif  yval <= 3.75 * zval - 206.25:\n\t\t\treturn 'r'\n\tif 75 < zval <= 95:\n\t\tif yval <= -3.75 * zval + 356.25:\n\t\t\treturn 'r'\n\telif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_point_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_pointmat(x, z, y), int(round(random.uniform(-100, -50))), int(round\\\n\t\t(random.uniform(350, 600))), energyval(find_pointmat(x, z, y)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_ditchmat(yval, xval, zval):\n\tif 55 < zval <= 75:\n\t\tif  yval <= -3.75 * zval + 281.25:\n\t\t\treturn 'r'\n\tif 75 < zval <= 95:\n\t\tif yval <= 3.75 * zval - 281.25:\n\t\t\treturn 'r'\n\telif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_ditch_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_ditchmat(x, z, y), int(round(random.uniform(-100, -50))), int(round\\\n\t\t(random.uniform(350, 600))), energyval(find_ditchmat(x, z, y)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_trimat(yval, xval, zval):\n\tif 50 < zval <= 100:\n\t\tif yval <= zval * -1.2 + 120:\n\t\t\treturn 'r'\n\t\telse:\n\t\t\treturn 'a'\n\telif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\ndef pos_tri_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_trimat(x, z, y), int(round(random.uniform(-100, -50))), int(round\\\n\t\t(random.uniform(350, 600))), energyval(find_trimat(x, z, y)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_floatmat(yval, xval, zval, val):\n\tif val * 0.6 < zval <= val * 0.89 and val * 0.13 < yval <= val * 0.96:\n\t\tif val * 0.15 < yval <= val * 0.36:\n\t\t\tif val * 0.1 < xval <= val * 0.3:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.4 < xval <= val * 0.6:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.7 < xval <= val * 0.9:\n\t\t\t\treturn 'a'\n\t\tif val * 0.39 < yval <= val * 0.6:\n\t\t\tif val * 0.1 < xval <= val * 0.3:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.4 < xval <= val * 0.6:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.7 < xval <= val * 0.9:\n\t\t\t\treturn 'a'\n\t\tif val * 0.63 < yval <= val * 0.84:\n\t\t\tif val * 0.1 < xval <= val * 0.3:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.4 < xval <= val * 0.6:\n\t\t\t\treturn 'a'\n\t\t\telif val * 0.7 < xval <= val * 0.9:\n\t\t\t\treturn 'a'\n\t\treturn 'r'\n\telif zval < val * 0.35:\n\t\treturn 'w'\n\treturn 'a'\ndef pos_float_matrix(dim):\n\td = dim**3\n\tmatrix = [[[Particle(find_floatmat(x, z, y, dim), int(round(random.uniform(-100, -50))), int(round(random.uniform(350, 600)))\\\n\t\t, energyval(find_floatmat(x, z, y, dim)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\tmatrix[40][5][30].tagged = True\n\treturn matrix\n\ndef find_xmat(xval, zval, yval):\n\tif 13 < xval <= 78:\n\t\tif 65 < zval <= 75 and yval <= 60:\n\t\t\treturn 'r'\n\t\telif 45 < zval <= 95 and 20 < yval <= 40:\n\t\t\treturn 'r'\n\tif zval < 35:\n\t\treturn 'w'\n\treturn 'a'\n\n############################################################################################################################################\n\n# Finds total energy of barrier\ndef sum_energy(pos_matrix):\n\ttotal_energy = 0\n\tfor x in pos_matrix:\n\t\tfor y in x:\n\t\t\tfor z in y:\n\t\t\t\tif z:\n\t\t\t\t\tif z.particletype == 'r':\n\t\t\t\t\t\ttotal_energy += z.energy\n\treturn total_energy\n\n# Calculates stress to be added to the barrier\n\ndef add_stress(particle):\n\tglobal stress\n\treturn 0.025 * (((0.1 * (particle.y) * (math.sqrt((particle.vy**2) + (particle.vz**2))))/0.0063) * math.sin(math.atan(particle.vz/particle.vy)))\n\t\n# Modified formula for floating barrier\n\ndef add_stress_mod(particle):\n\tglobal stress\n\treturn 0.0025 * math.sqrt(particle.vy**2 + particle.vz**2)/0.0063\n\n\ndef test_mat(pos_matrix):\n\tfig = plt.figure()\n\tax = fig.add_subplot(111, projection = '3d')\n\tdim = len(pos_matrix)\n\t# lst_color = []\n\txlist = []\n\tylist = []\n\tzlist = []\n\tfor x in range(dim):\n\t\tfor y in range(dim):\n\t\t\tfor z in range(dim):\n\t\t\t\tif pos_matrix[x][y][z].particletype == 'r':\n\t\t\t\t\t\t# lst_color.append('brown')\n\t\t\t\t\t\txlist.append(x)\n\t\t\t\t\t\tylist.append(z)\n\t\t\t\t\t\tzlist.append(y)\n\t\t\t\t# elif pos_matrix[x][y][z].particletype == 'w':\n\t\t\t\t# \tlst_color.append('blue')\n\t\t\t\t# \txlist.append(x)\n\t\t\t\t# \tylist.append(y)\n\t\t\t\t# \tzlist.append(z)\n\tax.set_xlabel('X')\n\tax.set_ylabel('Z')\n\tax.set_zlabel('Y')\n\tax.set_xlim3d(0, 100);\n\tax.set_ylim3d(0, 100);\n\tax.set_zlim3d(0, 100);\n\tax.scatter(xlist, ylist, zlist, c='brown', marker='o')\n\tplt.show()\n\n\n# Notes:\n# Don't repeat yourself (DRY coding)\n# Name them explicitly (don't use names like `d`)\n# Variable naming format: \"`datastructure_name`\" (for example `coorlist` would be `lst_coords`)\n\n\ndef energy_homogeneity(position_matrix):\n\thomogeneity = 0\n\tlst_waters = get_type_coords(position_matrix, 'w')\n\tfor water in lst_waters:\n\t\tneighbors = get_neighbors(position_matrix, water[0], water[1], water[2])\n\t\tlst_energy = [position_matrix[neighbor[0]][neighbor[1]][neighbor[2]].energy for neighbor in neighbors] + [position_matrix[water[0]][water[1]][water[2]].energy]\n\t\thomogeneity += np.std(lst_energy)\n\treturn homogeneity\n\n\n# Steps of Testing\n# Generate position and energy matrix of specified dimensions\n# Get the average energy, store it aside\n# Use raise_energy(200)\n# Get average energy, store it aside\n# How many timesteps does this method take to let energy_homogeneity to be about 0?\n# How much time does propagate energy take per iteration?\n# Plot plot_homogeneity_propagation until about 0\n# Plot energy_plot3D until about 0 (UNLESS the answer to number #5 is greater than 10)\n\ndef find_channels(matrix):\n\tlenm = len(matrix)\n\tchannel = True\n\tlist_tup = []\n\tfor x in range(lenm):\n\t\tfor z in range(lenm):\n\t\t\tfor y in range(lenm):\n\t\t\t\tif matrix[x][y][z].particletype == \"w\" and channel:\n\t\t\t\t\tchannel = True\n\t\t\t\telse:\n\t\t\t\t\tchannel = False\n\t\tif channel:\n\t\t\tlist_tup.append(('y', x, z))\n\t\t\t\t\n\tfor y in range(lenm):\n\t\tfor z in range(lenm):\n\t\t\tfor x in range(lenm):\n\t\t\t\tif matrix[x][y][z].particletype == \"w\" and channel:\n\t\t\t\t\tchannel = True\n\t\t\t\telse:\n\t\t\t\t\tchannel = False\n\t\tif channel:\n\t\t\tlist_tup.append(('x', y, z))\n\treturn list_tup\n\ndef get_type_coords(position_matrix, flag):\n\tdim = len(position_matrix)\n\tlst = []\n\tif flag == 1:\n\t\tflag = \"w\"\n\tif flag == 0:\n\t\tflag = \"r\"\n\tif flag == -1:\n\t\tflag = \"a\"\n\tfor x in range(dim):\n\t\tfor y in range(dim):\n\t\t\tfor z in range(dim):\n\t\t\t\tif position_matrix[x][y][z]:\n\t\t\t\t\tif position_matrix[x][y][z].particletype == flag:\n\t\t\t\t\t\tlst.append([x, y, z])\n\treturn lst\n\ndef mutate(pos_matrix, energy_matrix):\n\twaters = get_type_coords(pos_matrix, 1)\n\tneighbors = []\n\tchoice = []\n\tdim = len(pos_matrix)\n\tswap = 0\n\tfor w in waters:\n\t\tif random.randint(1, 10) == 1:\n\t\t\tneighbors = get_neighbors(energy_matrix, w[0], w[1], w[2])\n\t\t\tif neighbors:\n\t\t\t\tchoice = random.choice(neighbors)\n\t\t\t\tswap = energy_matrix[w[0]][w[1]][w[2]]\n\t\t\t\tenergy_matrix[w[0]][w[1]][w[2]] = energy_matrix[choice[0]][choice[1]][choice[2]]\n\t\t\t\tenergy_matrix[choice[0]][choice[1]][choice[2]] = swap\n\treturn energy_matrix\n\ndef get_neighbors(matrix, x, y, z):\n\tcoorlist = []\n\tdim = len(matrix)\n\tif x + 1 <= dim - 1:\n\t\tif matrix[x + 1][y][z]:\n\t\t\tif matrix[x + 1][y][z].particletype == \"w\":\n\t\t\t\tcoorlist.append([x + 1, y, z])\n\tif x - 1 >= 0:\n\t\tif matrix[x - 1][y][z]:\n\t\t\tif matrix[x - 1][y][z].particletype == \"w\":\n\t\t\t\tcoorlist.append([x - 1, y, z])\n\tif y + 1 <= dim - 1:\n\t\tif matrix[x][y + 1][z]:\n\t\t\tif matrix[x][y + 1][z].particletype == \"w\":\n\t\t\t\tcoorlist.append([x, y + 1, z])\n\tif y - 1 >= 0:\n\t\tif matrix[x][y - 1][z]:\n\t\t\tif matrix[x][y - 1][z].particletype == \"w\":\n\t\t\t\tcoorlist.append([x, y - 1, z])\n\tif z + 1 <= dim - 1:\n\t\tif matrix[x][y][z + 1]:\n\t\t\tif matrix[x][y][z + 1].particletype == \"w\":\n\t\t\t\tcoorlist.append([x, y, z + 1])\n\tif z - 1 >= 0:\n\t\tif matrix[x][y][z - 1]:\n\t\t\tif matrix[x][y][z - 1].particletype == \"w\":\n\t\t\t\tcoorlist.append([x, y, z - 1])\n\treturn coorlist\n\ndef energy_matrix(matrix):\n\tenergy = []\n\tdim = len(matrix)\n\tfor x in range(dim):\n\t\tenergy.append([])\n\t\tfor y in range(dim):\n\t\t\tenergy[x].append([])\n\t\t\tfor z in range(dim):\n\t\t\t\tif matrix[x][y][z].particletype == \"w\":\n\t\t\t\t\tenergy[x][y].append(random.randint(1, 100))\n\t\t\t\telif matrix[x][y][z].particletype == \"r\":\n\t\t\t\t\tenergy[x][y].append(-1)\n\t\t\t\telse:\n\t\t\t\t\tenergy[x][y].append(0)\n\treturn energy\n\ndef pos_small_matrix(dim):\n\tmatrix = [[[Particle(find_wallmat(x, z, y, dim), int(round(random.uniform(1, 2))), int(round(random.uniform(1, 2))), energyval(find_wallmat(y, x, z)), z, y, x, False) for y in range(dim)]for x in range(dim)] for z in range(dim)]\n\treturn matrix\n\n# Evaluates and simulates collision of all kinds\n\ndef collide(xhit, yhit, zhit, x, y, z, position_matrix):\n    global stress\n    \n    p_init = position_matrix[x][y][z]\n    dim = len(position_matrix)\n    if position_matrix:\n            if xhit >= dim or zhit < 0 or yhit >= dim or xhit < 0 or zhit >= dim or zhit < 0:\n                position_matrix[x][y][z] = None\n            elif yhit < 0:\n                p_init.vy *= -1\n            elif position_matrix[xhit][yhit][zhit]:\n                p_hit = position_matrix[xhit][yhit][zhit]\n                if p_hit.particletype == 'w':\n                    position_matrix = move_particle(xhit, yhit, zhit, position_matrix)\n                    if p_hit:\n                        p_init.__dict__, p_hit.__dict__ = \\\n                        p_hit.__dict__, p_init.__dict__\n                    else:\n                        p_hit.__dict__ = p_init.__dict__\n                        position_matrix[x][y][z] = None\n                elif p_hit.particletype == 'r':\n                    movey = p_init.vy\n                    movez = p_init.vz\n                    p_hit.energy += 0.025 * (0.95 * math.sqrt(movey**2 + movez**2))\n                    stress += add_stress_mod(p_init)\n                    position_matrix[x][y][z] = None\n                elif p_hit.particletype == 'a':\n                    p_init.__dict__, p_hit.__dict__ = \\\n                    p_hit.__dict__, p_init.__dict__\n            else:\n                position_matrix[xhit][yhit][zhit] = position_matrix[x][y][z]\n                position_matrix[x][y][z] = None\n    return position_matrix\n\n# Calculates new location for particles\n\ndef get_new_yz(x, y, z, vy, vz, t=0.0063):\n    newy = int(y + vy*t - 193*t**2)\n    newz = int(z + vz*t)\n    return newy, newz\n\n# Runs the collide function; used for recursive call\n\ndef move_particle(x, y, z, position_matrix):\n    p_init = position_matrix[x][y][z]\n    if position_matrix:\n        if p_init and p_init.particletype == 'w':\n            newy, newz = get_new_yz(x, y, z, p_init.vy, p_init.vz)\n#             print(z, newz)\n            if p_init.vy > 0:\n                return collide(x, newy, newz, x, y, z, position_matrix)\n            elif p_init.vy < 0:\n                return collide(x, -1*newy, newz, x, y, z, position_matrix)\n\n#  Performs movement at each timestep\n\ndef move_recompute(part_matrix):\n    global printed\n    dim = len(part_matrix)\n    check_matrix = [[[True for x in range(dim)]for y in range(dim)]for z in range(dim)]\n    for x in range(dim):\n        for y in range(dim):\n            for z in range(dim):\n                if move_particle(x, y, z, part_matrix) != None:\n                    if part_matrix[x][y][z]:\n                        if part_matrix[x][y][z].particletype == 'w':\n                            if check_matrix[x][y][z]:\n                                part_matrix = move_particle(x, y, z, part_matrix)\n                                check_matrix[x][y][z] = False\n    return part_matrix\n\ndef compute_energies(pmatrix):\n    # Iterate through the position matrix\n    # Overwrite every energy value for waters with (vz^2 + vy^2)/(40400)\n    for x in pmatrix:\n        for y in x:\n            for z in y:\n                if z:\n                    if z.particletype == 'w':\n                        z.energy = (z.vz^2 + z.vy^2)/(40400)\n    return pmatrix\n\nhlist = []\n\n\n# Plots the simulation\n\ndef plot(num_timesteps, pos_matrix):\n    global hlist\n    fig = plt.figure()\n    ax = fig.add_subplot(111, projection = '3d')\n    dim = len(pos_matrix)\n    lst_color = []\n    xlist = []\n    ylist = []\n    zlist = []\n    numthing = 0\n    for i in range(num_timesteps):\n        pos_matrix = move_recompute(pos_matrix)\n        # pos_matrix = compute_energies(pos_matrix)\n        hlist.append(energy_homogeneity(pos_matrix))\n        for x in pos_matrix:\n            for y in x:\n                for z in y:\n                    if z:\n                        if z.particletype == 'w':\n                            numthing += 1\n        print(numthing)\n        numthing = 0\n    for x in range(dim):\n        for y in range(dim):\n            for z in range(dim):\n                if pos_matrix[x][y][z]:\n                    if pos_matrix[x][y][z].particletype == 'r':\n                        lst_color.append('brown')\n                        xlist.append(x)\n                        ylist.append(z)\n                        zlist.append(y)\n                    elif pos_matrix[x][y][z].particletype == 'w':\n                        lst_color.append('blue')\n                        xlist.append(x)\n                        ylist.append(z)\n                        zlist.append(y)\n    ax.set_xlabel('X')\n    ax.set_ylabel('Z')\n    ax.set_zlabel('Y')\n    ax.set_xlim3d(0, dim);\n    ax.set_ylim3d(0, dim);\n    ax.set_zlim3d(0, dim);\n    ax.scatter(xlist, ylist, zlist, c=lst_color, marker='o')\n    plt.show()\n\n# Shows distribution of energy in barrier\n\ndef energy_wall3D(position_matrix):\n    global x_listing\n    global y_listing\n    global z_listing\n    global nrg_listing\n    dim = len(position_matrix)\n    fig = plt.figure()\n    ax = fig.add_subplot(111, projection = '3d')\n    xlist = []\n    ylist = []\n    zlist = []\n    lst_nrg = []\n    for x in range(dim):\n        for y in range(dim):\n            for z in range(dim):\n                if position_matrix[x][y][z]:\n                    if position_matrix[x][y][z].particletype == 'r' and position_matrix[x][y][z].energy != -1:\n                        lst_nrg.append(position_matrix[x][y][z].energy)\n    for x in range(dim):\n        for y in range(dim):\n            for z in range(dim):\n                if position_matrix[x][y][z]:\n                    if position_matrix[x][y][z].particletype == 'r' and position_matrix[x][y][z].energy != -1:\n\n                        xlist.append(x)\n                        ylist.append(z)\n                        zlist.append(y)\n    np.asarray(lst_nrg)\n    ax.set_xlabel('X')\n    ax.set_ylabel('Z')\n    ax.set_zlabel('Y')\n    ax.set_title('Energy Graph')\n    ax.set_xlim3d(0, 100);\n    ax.set_ylim3d(0, 100);\n    ax.set_zlim3d(0, 100);\n    for x in lst_nrg:\n        x += 1000\n    x_listing = xlist\n    y_listing = ylist\n    z_listing = zlist\n    nrg_listing = lst_nrg\n    ax.scatter(xlist, ylist, zlist, c = lst_nrg, marker='o', s = 2)\n    plt.show()\n\n\n\n\n\n\n\n\n\n",
+			"file": "Functions.py",
+			"file_size": 20753,
+			"file_write_time": 131638446184287610,
+			"settings":
+			{
+				"buffer_size": 20755,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "import numpy as np\nfrom matplotlib import pyplot as plt\nfrom itertools import product\nfrom mpl_toolkits.mplot3d import Axes3D\n%matplotlib inline\nimport sklearn as svm\nfrom numpy import random\nimport math\n",
+			"settings":
+			{
+				"buffer_size": 204,
+				"line_ending": "Unix",
+				"name": "import numpy as np"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 107.0,
+		"last_filter": "insta",
+		"selected_items":
+		[
+			[
+				"insta",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"view.file_name()",
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/rattaluri001/Desktop/wave-energetics/notes/notebooks/Functions",
+		"/Users/rattaluri001/Downloads/Laurana_tex/ifdraft.sty",
+		"/Users/rattaluri001/Downloads/53AJAY3014-Alignment-HitTable.cs",
+		"/Users/rattaluri001/Desktop/wave-energetics/README.md",
+		"/Users/rattaluri001/Documents/Rama/JS/JSLearn.html"
+	],
+	"find":
+	{
+		"height": 23.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"unused",
+			"35",
+			"grid",
+			"homog",
+			"pos_"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "Functions.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 20755,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								20755
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 204,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								204,
+								204
+							]
+						],
+						"settings":
+						{
+							"auto_name": "import numpy as np",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "untitled.py",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
